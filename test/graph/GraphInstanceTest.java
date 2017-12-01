@@ -75,6 +75,8 @@ public abstract class GraphInstanceTest {
     private static final String VERTEX4 = "Test4";
     private final int WEIGHT1 = 1;
     private final int WEIGHT5 = 5;
+    
+    //TODO: Test edge with weight 0;
     private final int WEIGHT0 = 0;
     
     
@@ -87,7 +89,7 @@ public abstract class GraphInstanceTest {
     	test.add(VERTEX4);
     	test.set(VERTEX1, VERTEX2, WEIGHT1);  // VERTEX1 --1--> VERTEX2
     	test.set(VERTEX2, VERTEX3, WEIGHT5);  // VERTEX2 --5--> VERTEX3
-    	test.set(VERTEX3, VERTEX1, WEIGHT0);  // No edge created
+    	//test.set(VERTEX3, VERTEX1, WEIGHT0);  // No edge created
     	
     	return test;
     }
@@ -118,12 +120,12 @@ public abstract class GraphInstanceTest {
     	
     	// Make sure edges weren't changed.
     	Map<String, Integer> expectedSources = new HashMap<String, Integer>();
-    	expectedSources.put(VERTEX2, WEIGHT1);
+    	expectedSources.put(VERTEX1, WEIGHT1);
     	assert expectedSources.equals(test.sources(VERTEX2));
     	
     	Map<String, Integer> expectedTargets = new HashMap<String, Integer>();
     	expectedTargets.put(VERTEX3, WEIGHT5);
-    	assert expectedTargets.equals(test.sources(VERTEX2));
+    	assert expectedTargets.equals(test.targets(VERTEX2));
     }
     
     @Test
@@ -143,8 +145,8 @@ public abstract class GraphInstanceTest {
     	expected.put(VERTEX2, WEIGHT5);
     	expected.put(VERTEX4, WEIGHT1);
     	
-    	assertEquals("expected map", expected, test.targets(VERTEX3));
-    	assertEquals("expected map to have size ", expected.size(), test.targets(VERTEX3).size());
+    	assertEquals("expected map", expected, test.sources(VERTEX3));
+    	assertEquals("expected map to have size ", expected.size(), test.sources(VERTEX3).size());
     }
     
     @Test
@@ -175,13 +177,13 @@ public abstract class GraphInstanceTest {
     	test.set(VERTEX1, VERTEX2, WEIGHT5);
     	
     	Map<String, Integer> expectedTargets = new HashMap<String, Integer>();
-    	expectedTargets.put(VERTEX2, WEIGHT5);
-    	assert expectedTargets.equals(test.sources(VERTEX1));
+    	expectedTargets.put(VERTEX1, WEIGHT5);
+    	assert expectedTargets.equals(test.sources(VERTEX2));
     	
     }
     
-    @Test
-    // Tests set when an edge is removed because weight is zero
+    @Test(expected=AssertionError.class)
+    // Tests set when weight is zero. Edges with weight 0 violate pre-condition od Edge class
     public void testSetWeightZero() {
     	Graph<String> test = makeGraph();
     	test.set(VERTEX2, VERTEX3, WEIGHT0);
@@ -205,11 +207,11 @@ public abstract class GraphInstanceTest {
     }
     
     @Test
-    //Test remove when size 1 and verrtex not part of an edge. 
+    //Test remove when size 1 and vertex not part of an edge. 
     public void testRemoveOne() {
     	Graph<String> test = emptyInstance();
     	assert test.add(VERTEX1);
-    	assertTrue("expected vertex to not be removed", test.remove(VERTEX2));
+    	assertTrue("expected vertex to not be removed", !test.remove(VERTEX2));
     	assertEquals("expected set to contain one element", Collections.singleton(VERTEX1), test.vertices());
     	assertTrue("expected vertex to be removed", test.remove(VERTEX1));
     	assertEquals("expected graph to contain no vertices", Collections.EMPTY_SET, test.vertices());
@@ -217,7 +219,7 @@ public abstract class GraphInstanceTest {
     
     @Test
     //Test remove when size n and vertex removed was part of an edge. 
-    public void TestRemove(){
+    public void testRemove(){
     	Graph<String> test = makeGraph();
     	test.remove(VERTEX2);
     	
