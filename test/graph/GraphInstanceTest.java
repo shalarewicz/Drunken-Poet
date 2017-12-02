@@ -182,7 +182,7 @@ public abstract class GraphInstanceTest {
     	
     }
     
-    @Test(expected=AssertionError.class)
+    @Test
     // Tests set when weight is zero. Edges with weight 0 violate pre-condition od Edge class
     public void testSetWeightZero() {
     	Graph<String> test = makeGraph();

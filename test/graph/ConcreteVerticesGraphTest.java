@@ -111,7 +111,7 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     @Test
     // tests toString when no targets
     public void testToStringNoTargers() {
-    	String expected = "Test2=[]";
+    	String expected = "Test1=[]";
     	assertEquals("expected string ", expected, V1.toString());
     }
     
@@ -119,7 +119,7 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     // tests toString when 1 target
     public void testToStringOneTarget() {
     	V1.setTarget(V4, WEIGHT5);
-    	String expected = "Test2=[Test4: 5]";
+    	String expected = "Test1=[Test4: 5]";
     	assertEquals("expected string ", expected, V1.toString());
     }
     
@@ -128,7 +128,7 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     public void testToStringManyTargets() {
     	V1.setTarget(V4, WEIGHT5);
     	V1.setTarget(V3, WEIGHT4);
-    	String expected = "Test2=[Test3: 4, Test4: 5]";
+    	String expected = "Test1=[Test3: 4, Test4: 5]";
     	assertEquals("expected string ", expected, V1.toString());
     }
     

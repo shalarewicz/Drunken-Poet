@@ -64,18 +64,20 @@ public class ConcreteEdgesGraph implements Graph<String> {
     
     @Override public int set(String source, String target, int weight) {
     	if (!vertices.contains(source) || !vertices.contains(target)) {throw new RuntimeException("Source or Target not contained in graph");}
-    	Edge toSet = new Edge(source, target, weight);
     	int result = 0;
     	List<Edge> toRemove = new ArrayList<Edge>();
     	for (Edge edge : edges) {
-    		if (edge.source() == toSet.source() && edge.target() == toSet.target()) {
+    		if (edge.source() == source && edge.target() == target) {
     			result = edge.weight();
     			toRemove.add(edge);
     			break;
     		}
     	}
     	edges.removeAll(toRemove);
-    	edges.add(toSet);
+    	if (weight > 0) {
+    		Edge toSet = new Edge(source, target, weight);
+    		edges.add(toSet);   		
+    	}
     	checkRep();
     	return result;
     }
