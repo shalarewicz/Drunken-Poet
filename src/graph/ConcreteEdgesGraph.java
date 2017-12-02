@@ -5,9 +5,11 @@ package graph;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.TreeSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.HashMap;
 import java.util.Arrays;
 
@@ -16,10 +18,10 @@ import java.util.Arrays;
  * 
  * <p>PS2 instructions: you MUST use the provided rep.
  */
-public class ConcreteEdgesGraph implements Graph<String> {
+public class ConcreteEdgesGraph<L extends Comparable<L>> implements Graph<L> {
     
-    private final Set<String> vertices = new HashSet<>();
-    private final List<Edge> edges = new ArrayList<>();
+    private final Set<L> vertices = new HashSet<>();
+    private final List<Edge<L>> edges = new ArrayList<>();
     
     // Abstraction function:
     // 		The Graph consists of all the vertices in vertices connected by the edges listed in edges
@@ -38,19 +40,19 @@ public class ConcreteEdgesGraph implements Graph<String> {
     public ConcreteEdgesGraph() {	
     }
     
-    public ConcreteEdgesGraph(Set<String> v, List<Edge> e) {
+    public ConcreteEdgesGraph(Set<L> v, List<Edge<L>> e) {
     	this.vertices.addAll(v);
     	this.edges.addAll(e);
     }
-    public ConcreteEdgesGraph(Set<String> v) {
+    public ConcreteEdgesGraph(Set<L> v) {
     	this.vertices.addAll(v);
     }
-    public ConcreteEdgesGraph(List<Edge> e) {
+    public ConcreteEdgesGraph(List<Edge<L>> e) {
     	this.edges.addAll(e);
     }
     
     private void checkRep() {
-    	for (Edge edge : edges) {
+    	for (Edge<L> edge : edges) {
     		assert vertices.contains(edge.source());
     		assert vertices.contains(edge.target());
     	}
@@ -58,15 +60,15 @@ public class ConcreteEdgesGraph implements Graph<String> {
     	
     }
     
-    @Override public boolean add(String vertex) {
+    @Override public boolean add(L vertex) {
         return vertices.add(vertex);
     }
     
-    @Override public int set(String source, String target, int weight) {
+    @Override public int set(L source, L target, int weight) {
     	if (!vertices.contains(source) || !vertices.contains(target)) {throw new RuntimeException("Source or Target not contained in graph");}
     	int result = 0;
-    	List<Edge> toRemove = new ArrayList<Edge>();
-    	for (Edge edge : edges) {
+    	List<Edge<L>> toRemove = new ArrayList<Edge<L>>();
+    	for (Edge<L> edge : edges) {
     		if (edge.source() == source && edge.target() == target) {
     			result = edge.weight();
     			toRemove.add(edge);
@@ -75,16 +77,16 @@ public class ConcreteEdgesGraph implements Graph<String> {
     	}
     	edges.removeAll(toRemove);
     	if (weight > 0) {
-    		Edge toSet = new Edge(source, target, weight);
+    		Edge<L> toSet = new Edge<L>(source, target, weight);
     		edges.add(toSet);   		
     	}
     	checkRep();
     	return result;
     }
     
-    @Override public boolean remove(String vertex) {
-    	List<Edge> toRemove = new ArrayList<Edge>();
-    	for (Edge edge : edges) {
+    @Override public boolean remove(L vertex) {
+    	List<Edge<L>> toRemove = new ArrayList<Edge<L>>();
+    	for (Edge<L> edge : edges) {
     		if (edge.source() == vertex || edge.target() == vertex) {
     			toRemove.add(edge);
     		}
@@ -94,17 +96,17 @@ public class ConcreteEdgesGraph implements Graph<String> {
     	return vertices.remove(vertex);
     }
     
-    @Override public Set<String> vertices() {
+    @Override public Set<L> vertices() {
     	// Copy to prevent rep exposure but is it necessary?
     	// Vertices are supposes to be immutable
-    	Set<String> answer = new HashSet<String>();
+    	Set<L> answer = new HashSet<L>();
     	answer.addAll(vertices);
     	return answer;
     }
     
-    @Override public Map<String, Integer> sources(String target) {
-    	Map<String, Integer> result = new HashMap<String, Integer>();
-    	for (Edge edge : edges) {
+    @Override public Map<L, Integer> sources(L target) {
+    	Map<L, Integer> result = new HashMap<L, Integer>();
+    	for (Edge<L> edge : edges) {
     		if (edge.target() == target) {
     			result.put(edge.source(), edge.weight()); 
     		}
@@ -113,9 +115,9 @@ public class ConcreteEdgesGraph implements Graph<String> {
     	return result;
     }
     
-    @Override public Map<String, Integer> targets(String source) {
-    	Map<String, Integer> result = new HashMap<String, Integer>();
-    	for (Edge edge : edges) {
+    @Override public Map<L, Integer> targets(L source) {
+    	Map<L, Integer> result = new HashMap<L, Integer>();
+    	for (Edge<L> edge : edges) {
     		if (edge.source() == source) {
     			result.put(edge.target(), edge.weight());
     		}
@@ -129,8 +131,8 @@ public class ConcreteEdgesGraph implements Graph<String> {
      * @param target - Target of the edge to be found
      * @return - weight of the edge from source to target. Returns 0 if not found. 
      */
-    private int getWeight(String source, String target) {
-    	for (Edge edge : edges) {
+    private int getWeight(L source, L target) {
+    	for (Edge<L> edge : edges) {
     		if (source == edge.source() && target == edge.target()) {
     			return edge.weight();
     		}
@@ -152,42 +154,33 @@ public class ConcreteEdgesGraph implements Graph<String> {
     	StringBuilder ans = new StringBuilder();
     	ans.append("{");
     	
-    	String[] sortedVertices = new String[vertices.size()];
-    	int n = 0;
-    	for (String vertex : vertices) {
-    		sortedVertices[n] = vertex;
-    		n++;
-    	}
-    	Arrays.sort(sortedVertices);
     	
-    	for (int i = 0; i < sortedVertices.length; i++) {
-    		ans.append(sortedVertices[i] + "=[");
-    		Map<String, Integer> targets = targets(sortedVertices[i]);
+    	SortedSet<L> sortedVertices = new TreeSet<L>(vertices);
+
+    	int i = 0;
+    	for (L vertex : sortedVertices) {
+    		ans.append(vertex + "=[");
+    		Map<L, Integer> targets = targets(vertex);
     		
-    		String[] sortedTargets = new String[targets.size()];
-    		int k = 0;
-    		for (String target : targets.keySet()) {
-        		sortedTargets[k] = target;
-        		k++;
-        	}
-    		Arrays.sort(sortedTargets);
-    		
-    		for (int j = 0; j < sortedTargets.length; j++) {
-    			ans.append(sortedTargets[j] + ": " + targets.get(sortedTargets[j]));
-    			if (j < sortedTargets.length - 1) {
+    		int j = 0;
+    		for (L target : new TreeSet<L>(targets.keySet())){
+    			ans.append(target + ": " + targets.get(target));
+    			j++;
+    			if (j < targets.size()) {
     				ans.append(", ");
     			}
     		}
     		ans.append("]");
-    		if (i < sortedVertices.length - 1) {
+    		
+    		if (i < sortedVertices.size() - 1) {
     			ans.append(", ");
 			}
-    		
+    		i++;
     	}
+    	System.out.println(ans);
     	return ans.toString() + "}";
     	
     }
-    
     
 }
 
@@ -201,9 +194,9 @@ public class ConcreteEdgesGraph implements Graph<String> {
  * <p>PS2 instructions: the specification and implementation of this class is
  * up to you.
  */
-class Edge {
+class Edge<L extends Comparable<L>> implements Comparable<Edge<L>>{
     
-	private String source, target;
+	private L source, target;
 	private int weight;
 	
     // Abstraction function:
@@ -220,7 +213,7 @@ class Edge {
     * @param t - the target of the edge. 
     * @param w - the weight of the edge. Must not equal 0. Edges that equal zero will throw an IllegalArgumentException
     */
-	public Edge(String s, String t, int w) {
+	public Edge(L s, L t, int w) {
 		if (weight != 0) { throw new IllegalArgumentException();}
 		source = s;
 		target = t;
@@ -236,7 +229,7 @@ class Edge {
      * 
      * @return the source of the edge. 
      */
-    public String source() {
+    public L source() {
     	return this.source;
     }
     
@@ -244,7 +237,7 @@ class Edge {
      * Return the target vertex of the edge
      * @return target of the edge
      */
-    public String target() {
+    public L target() {
     	return this.target;
     }
     
@@ -257,8 +250,21 @@ class Edge {
     }
     
     
-    @Override public String toString() {
+    @Override 
+    public String toString() {
     	return "(" + source + "-->" + target + ": " + weight + ")";
     }
+    
+    @Override
+    public int compareTo(Edge<L> that) {
+    	if (source.compareTo(that.source()) == 0) {
+    		if (target.compareTo(that.target()) == 0) {
+    			return this.weight - that.weight;
+    		}
+    		else {return (this.target().compareTo(that.target()));}
+    	} else {return this.source.compareTo(that.source());}
+    }
+    
+    
     
 }

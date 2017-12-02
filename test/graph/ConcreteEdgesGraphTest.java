@@ -8,9 +8,9 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 /**
- * Tests for ConcreteEdgesGraph.
+ * Tests for ConcreteEdgesGraph<String>.
  * 
- * This class runs the GraphInstanceTest tests against ConcreteEdgesGraph, as
+ * This class runs the GraphInstanceTest tests against ConcreteEdgesGraph<String>, as
  * well as tests for that particular implementation.
  * 
  * Tests against the Graph spec should be in GraphInstanceTest.
@@ -18,17 +18,17 @@ import org.junit.Test;
 public class ConcreteEdgesGraphTest extends GraphInstanceTest {
     
     /*
-     * Provide a ConcreteEdgesGraph for tests in GraphInstanceTest.
+     * Provide a ConcreteEdgesGraph<String> for tests in GraphInstanceTest.
      */
     @Override public Graph<String> emptyInstance() {
-        return new ConcreteEdgesGraph();
+        return new ConcreteEdgesGraph<String>();
     }
     
     /*
-     * Testing ConcreteEdgesGraph...
+     * Testing ConcreteEdgesGraph<String>...
      */
     
-    // Testing strategy for ConcreteEdgesGraph.toString()
+    // Testing strategy for ConcreteEdgesGraph<String>.toString()
     //   Graph size 0, 1, n
     //   Source has 0, 1, n targets
     
@@ -42,21 +42,21 @@ public class ConcreteEdgesGraphTest extends GraphInstanceTest {
     
     @Test
     public void testToStringEmptyGraph() {
-    	ConcreteEdgesGraph test = new ConcreteEdgesGraph();
+    	ConcreteEdgesGraph<String> test = new ConcreteEdgesGraph<String>();
     	final String expected = "{}";
     	assertEquals("expected string ", expected, test.toString());
     }
     
     @Test
     public void testToStringSingleVertex() {
-    	ConcreteEdgesGraph test = new ConcreteEdgesGraph();
+    	ConcreteEdgesGraph<String> test = new ConcreteEdgesGraph<String>();
     	test.add(VERTEX1);
     	final String expected = "{Test1=[]}";
     	assertEquals("expected string ", expected, test.toString());
     }
     @Test
     public void testToStringNVertices() {
-    	ConcreteEdgesGraph test = new ConcreteEdgesGraph();
+    	ConcreteEdgesGraph<String> test = new ConcreteEdgesGraph<String>();
     	test.add(VERTEX1);
     	test.add(VERTEX2);
     	test.add(VERTEX3);
@@ -76,8 +76,7 @@ public class ConcreteEdgesGraphTest extends GraphInstanceTest {
     //   Test for rep exposure of source, target, weight fields
     //   Test weight <> 0 throws AssertionError
     
-    // TODO tests for operations of Edge
-    private final Edge TEST = new Edge(VERTEX1, VERTEX2, WEIGHT5);
+    private final Edge<String> TEST = new Edge<String>(VERTEX1, VERTEX2, WEIGHT5);
     
     @Test
     public void testImmutableEdgeSource() {
