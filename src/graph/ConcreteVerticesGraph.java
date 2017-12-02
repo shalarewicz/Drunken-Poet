@@ -16,9 +16,9 @@ import java.util.HashMap;
  * 
  * <p>PS2 instructions: you MUST use the provided rep.
  */
-public class ConcreteVerticesGraph implements Graph<String> {
+public class ConcreteVerticesGraph<L> implements Graph<L> {
     
-    private final List<Vertex> vertices = new ArrayList<>();
+    private final List<Vertex<L>> vertices = new ArrayList<>();
     
     // Abstraction function:
     //   Each vertex is a node in the Graph.
@@ -30,40 +30,40 @@ public class ConcreteVerticesGraph implements Graph<String> {
     
     
     /**
-     * Constructs an Empty ConcreteVerticesGraph
+     * Constructs an Empty ConcreteVerticesGraph<L>
      */
     public ConcreteVerticesGraph() {}
     
     /**
-     * Constructs a new ConcreteVerticesGraph from the given list. Each Item in the list will be 
+     * Constructs a new ConcreteVerticesGraph<L> from the given list. Each Item in the list will be 
      * the name of a vertex in the graph
      */
     /**
-     * Constructs a new ConcreteVerticesGraph from the given list. Each Item in the list will be 
+     * Constructs a new ConcreteVerticesGraph<L> from the given list. Each Item in the list will be 
      * the name of a vertex in the graph
      * 
      * @param strings - The list of strings to be made into vertices
      */
-    public ConcreteVerticesGraph(List<String> strings) {
-    	for (String s : strings) {
-    		vertices.add(new Vertex(s));
+    public ConcreteVerticesGraph(List<L> strings) {
+    	for (L s : strings) {
+    		vertices.add(new Vertex<L>(s));
     	}
     }
     
     // TODO checkRep
     private void checkRep() {
-    	for (Vertex vertex : vertices) {
-    		assert vertex.getName().length() > 0;
-    		for (Vertex target : vertex.getTargets()) {
+    	for (Vertex<L> vertex : vertices) {
+    		assert vertex.getName() != null;
+    		for (Vertex<L> target : vertex.getTargets()) {
     			assert vertex.getWeight(target) > 0;
     		}
     	}
     }
     
-    @Override public boolean add(String vertex) {
-    	Vertex toAdd = new Vertex(vertex);
+    @Override public boolean add(L vertex) {
+    	Vertex<L> toAdd = new Vertex<L>(vertex);
     	if (!this.vertices.contains(toAdd)) {
-    		this.vertices.add(new Vertex(vertex));
+    		this.vertices.add(new Vertex<L>(vertex));
     		checkRep();
     		return true;
     	}
@@ -74,32 +74,32 @@ public class ConcreteVerticesGraph implements Graph<String> {
      * @param s - Name of vertex to find
      * @return - returns the Vertex with name s
      */
-    private Vertex findVertex(String s) {
-    	for (Vertex vertex : vertices) {
+    private Vertex<L> findVertex(L s) {
+    	for (Vertex<L> vertex : vertices) {
     		if (vertex.getName().equals(s)) {
     			return vertex;
     		}
     	}
     	throw new RuntimeException("Should never get here. Vertex not in graph");
     }
-    @Override public int set(String source, String target, int weight) {
-    	Vertex sourceV = findVertex(source);
-    	Vertex targetV = findVertex(target);
+    @Override public int set(L source, L target, int weight) {
+    	Vertex<L> sourceV = findVertex(source);
+    	Vertex<L> targetV = findVertex(target);
     	int oldWeight = sourceV.getWeight(targetV);
     	sourceV.setTarget(targetV, weight);
     	targetV.setSource(sourceV, weight);
     	return oldWeight;
     }
     
-    @Override public boolean remove(String vertex) {
+    @Override public boolean remove(L vertex) {
     	for (int i = 0; i < vertices.size(); i++) {
-    		Vertex v = vertices.get(i);
+    		Vertex<L> v = vertices.get(i);
     		if (v.getName().equals(vertex)) {
-    			for (Vertex t : v.getTargets()) {
+    			for (Vertex<L> t : v.getTargets()) {
     				v.setTarget(t, 0);
     				t.setSource(v, 0);
     			}
-    			for (Vertex s: v.getSources()) {
+    			for (Vertex<L> s: v.getSources()) {
     				v.setSource(s, 0);
     				s.setTarget(v, 0);
     			}
@@ -111,28 +111,28 @@ public class ConcreteVerticesGraph implements Graph<String> {
     	return false;
     }
     
-    @Override public Set<String> vertices() {
-    	Set<String> result = new HashSet<String>();
-    	for (Vertex v: vertices) {
+    @Override public Set<L> vertices() {
+    	Set<L> result = new HashSet<L>();
+    	for (Vertex<L> v: vertices) {
     		result.add(v.getName());
     	}
     	return result;
     }
     
-    @Override public Map<String, Integer> sources(String target) {
-    	Vertex targetV = findVertex(target);
-    	Map<String, Integer> result = new HashMap<String, Integer>();
-    	for (Vertex source : targetV.getSources()) {
+    @Override public Map<L, Integer> sources(L target) {
+    	Vertex<L> targetV = findVertex(target);
+    	Map<L, Integer> result = new HashMap<L, Integer>();
+    	for (Vertex<L> source : targetV.getSources()) {
     		result.put(source.getName(), targetV.getWeightFromSource(source));
     	}
     	return result;
 
     }
     
-    @Override public Map<String, Integer> targets(String source) {
-    	Vertex sourceV = findVertex(source);
-    	Map<String, Integer> result = new HashMap<String, Integer>();
-    	for (Vertex target : sourceV.getTargets()) {
+    @Override public Map<L, Integer> targets(L source) {
+    	Vertex<L> sourceV = findVertex(source);
+    	Map<L, Integer> result = new HashMap<L, Integer>();
+    	for (Vertex<L> target : sourceV.getTargets()) {
     		result.put(target.getName(), sourceV.getWeight(target));
     	}
     	return result;
@@ -146,38 +146,15 @@ public class ConcreteVerticesGraph implements Graph<String> {
     	StringBuilder ans = new StringBuilder();
     	ans.append("{");
     	
-    	String[] sortedVertices = new String[vertices.size()];
-    	
-    	for (int i = 0; i < vertices.size(); i++) {
-    		sortedVertices[i] = vertices.get(i).getName();
-    	}
-    	Arrays.sort(sortedVertices);
-    	
-    	for (int i = 0; i < sortedVertices.length; i++) {
-    		ans.append(sortedVertices[i] + "=[");
-    		
-    		Map<String, Integer> targets = targets(sortedVertices[i]);
-    		
-    		String[] sortedTargets = new String[targets.size()];
-    		
-    		int k = 0;
-    		for (String target : targets.keySet()) {
-        		sortedTargets[k] = target;
-        		k++;
-        	}
-    		Arrays.sort(sortedTargets);
-    		for (int j = 0; j < sortedTargets.length; j++) {
-    			ans.append(sortedTargets[j] + ": " + targets.get(sortedTargets[j]));
-    			if (j < sortedTargets.length - 1) {
-    				ans.append(", ");
-    			}
-    		}
-    		ans.append("]");
-    		if (i < sortedVertices.length - 1) {
+    	int i = 0;
+    	for (Vertex<L> vertex : vertices) {
+    		ans.append(vertex);
+    		if (i < vertices.size() - 1) {
     			ans.append(", ");
     		}
     	}
-    	
+        	
+    	System.out.println(ans);
     	return ans.toString() + "}";
     }
     		
@@ -185,16 +162,16 @@ public class ConcreteVerticesGraph implements Graph<String> {
 
 /**
  * Mutable.
- * This class is internal to the rep of ConcreteVerticesGraph.
+ * This class is internal to the rep of ConcreteVerticesGraph<L>.
  * 
  * <p> Vertex is a mutable structure. Each vertex has a name as well as 0 or more targets which are
  * connected to this vertex by and edge with a weight greater than zero. 
  */
-class Vertex {
+class Vertex<L> {
     
-	private Map<Vertex, Integer> sources = new HashMap<Vertex, Integer>();
-    private Map<Vertex, Integer> targets = new HashMap<Vertex, Integer>();
-    private String name;
+	private Map<Vertex<L>, Integer> sources = new HashMap<Vertex<L>, Integer>();
+    private Map<Vertex<L>, Integer> targets = new HashMap<Vertex<L>, Integer>();
+    private L name;
     
     // Abstraction function:
     //   Vertex consists of a name and a map mapping each target where vertex is the source to the weight of the edge between 
@@ -210,17 +187,17 @@ class Vertex {
      * Constructor for nested class Vertex
      * @param name - Creates vertex with name - name and now targets
      */
-    public Vertex(String name) {
+    public Vertex(L name) {
     	this.name = name;
     }
 
     
     private void checkRep() {
     	assert name != null;
-    	for (Vertex target : targets.keySet()) {
+    	for (Vertex<L> target : targets.keySet()) {
     		assert targets.get(target) != 0;
     	}
-    	for (Vertex source : sources.keySet()) {
+    	for (Vertex<L> source : sources.keySet()) {
     		assert sources.get(source) != 0;
     	}
     }
@@ -230,7 +207,7 @@ class Vertex {
      * Changes the name of the current vertex to name
      * @param name - The new name of vertex
      */
-    public void setName(String name) {
+    public void setName(L name) {
     	this.name = name;
     	checkRep();
     }
@@ -242,7 +219,7 @@ class Vertex {
      * @param weight - Weight of edge from this vertex to target. Requires weight >= 0;
      * @return - Weight of the previous edge between the two vertices or 0 if no such edge existed.
      */
-    public int setTarget(Vertex target, int weight) {
+    public int setTarget(Vertex<L> target, int weight) {
     	int oldWeight = getWeight(target);
     	if (weight > 0) {
     		targets.put(target, weight);
@@ -260,7 +237,7 @@ class Vertex {
      * @param weight - Weight of edge from this vertex to source. Requires weight >= 0;
      * @return - Weight of the previous edge between the two vertices or 0 if no such edge existed.
      */
-    public int setSource(Vertex source, int weight) {
+    public int setSource(Vertex<L> source, int weight) {
     	int oldWeight = getWeightFromSource(source);
     	if (weight > 0) {
     		
@@ -278,7 +255,7 @@ class Vertex {
      * 
      * @return Returns the name of the vertex
      */
-    public String getName() {
+    public L getName() {
     	return this.name;
     }
     /**
@@ -287,7 +264,7 @@ class Vertex {
      * @param target - Target vertex of the edge
      * @return - Weight of the edge or 0 if edge does not exist
      */
-    public int getWeight(Vertex target) {
+    public int getWeight(Vertex<L> target) {
     	return this.targets.getOrDefault(target, 0);
     }
     
@@ -297,7 +274,7 @@ class Vertex {
      * @param source - Source vertex of the edge
      * @return - Weight of the edge or 0 if edge does not exist
      */
-    public int getWeightFromSource(Vertex source) {
+    public int getWeightFromSource(Vertex<L> source) {
     	return this.sources.getOrDefault(source, 0);
     }
     
@@ -305,7 +282,7 @@ class Vertex {
      * 
      * @return Returns a set of targets of this vertex. 
      */
-    public Set<Vertex> getTargets(){
+    public Set<Vertex<L>> getTargets(){
     	return this.targets.keySet();
     }
     
@@ -313,13 +290,13 @@ class Vertex {
      * 
      * @return Returns a set of sources of this vertex. 
      */
-    public Set<Vertex> getSources(){
+    public Set<Vertex<L>> getSources(){
     	return this.sources.keySet();
     }
     
     @Override
     public boolean equals(Object that) {
-    	return that instanceof Vertex && this.namesEqual((Vertex) that);
+    	return that instanceof Vertex<?> && this.namesEqual((Vertex<L>) that);
     }
     
     /**
@@ -327,13 +304,13 @@ class Vertex {
      * @param that Vertex we're comparting to
      * @return True if names are equal
      */
-    private boolean namesEqual(Vertex that) {
+    private boolean namesEqual(Vertex<L> that) {
 		return this.getName().equals(that.getName());
 
     }
     
-    private Vertex findVertex(String s) {
-    	for (Vertex v : targets.keySet()) {
+    private Vertex<L> findVertex(L s) {
+    	for (Vertex<L> v : targets.keySet()) {
     		if (v.getName().equals(s)) {
     			return v;
     		}
@@ -346,25 +323,15 @@ class Vertex {
     	StringBuilder result = new StringBuilder();
     	result.append(this.name + "=[");
     	
-    	String[] sortedTargets = new String[targets.size()];
-
-    	int i = 0;
-    	for (Vertex v : targets.keySet()) {
-    		sortedTargets[i] = v.getName();
-    		i++;
-    	}
-    	
-    	Arrays.sort(sortedTargets);
-		
-		for (int j = 0; j < sortedTargets.length; j++) {
-			result.append(sortedTargets[j] + ": "); // add name
-			Vertex  targetV = findVertex(sortedTargets[j]);
-			result.append(targets.get(targetV)); //add weight
-			if (j < sortedTargets.length - 1) {
-				result.append(", ");
-			}
+    	int j = 0;
+    	for (Vertex<L> target : targets.keySet()) {
+    		result.append(target.getName() + ": " + targets.get(target));
+    		if (j < targets.size() - 1) {
+    			result.append(", ");
+    		}
+    		j++;
 		}
-    	
+    	System.out.println(result);
     	return result.toString() + "]";
     }
     
