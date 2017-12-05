@@ -4,7 +4,7 @@
 package poet;
 
 import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Scanner;
@@ -86,36 +86,35 @@ public class GraphPoet {
     	final String COMMA = ",";
     	final String PERIOD = ".";
     	
-    	Scanner input = new Scanner(corpus);
-    	// Breaks if length < 2;
-    	// Grab the next two words
-    	String previousWord = input.next().toLowerCase();
-    	String currentWord = input.next().toLowerCase();
-    	boolean last = false;
-    	while (input.hasNext() || !last) {
-    			// Account for periods or commas
-    			if (currentWord.equals(COMMA) || currentWord.equals(PERIOD)) {
-    				previousWord = previousWord + currentWord;
-    				currentWord = input.next().toLowerCase();
-    			}
-    			
-    			// Add the edge to the graph
-    			int oldWeight = graph.set(previousWord, currentWord, 1);
-    			
-    			if (oldWeight != 0) {
-    				graph.set(previousWord, currentWord, oldWeight + 1);
-    			}
-    			if (!input.hasNext()) {
-    				last = true;
-    			}
-    			else {
-    				last = false;
-    				previousWord = currentWord;
-    				currentWord = input.next().toLowerCase();
-    			}
-    		
+    	Scanner input = new Scanner(new BufferedReader(new FileReader(corpus)));
+    	
+    	if (!input.hasNext()) { 
+    		input.close();
+    		return;
     	}
     	
+    	String previousWord = input.next().toLowerCase();
+    	this.graph.add(previousWord);
+    	
+    	String currentWord = "";
+    	
+    	while (input.hasNext()) {
+    		currentWord = input.next().toLowerCase();
+    		// Account for periods or commas
+			if (currentWord.equals(COMMA) || currentWord.equals(PERIOD)) {
+				previousWord = previousWord + currentWord;
+				continue;
+			}
+			
+			int oldWeight = graph.set(previousWord, currentWord, 1);
+			if (oldWeight != 0) {
+				graph.set(previousWord, currentWord, oldWeight + 1);
+			}
+			
+			previousWord = currentWord;
+    		
+    	}
+    	 	
     	input.close();
     }
     
@@ -131,66 +130,63 @@ public class GraphPoet {
     	// When adding a bridge word, check to see if prior word has period then capitalize.
     	// New line ever 10 words?
     	
+    	if (input.length() == 0) {
+    		return "";
+    	}
     	Scanner in = new Scanner(input);
     	StringBuilder result = new StringBuilder();
     	
-    	String currentWord = in.next().toLowerCase();
-    	// TODO: Will break with string length < 2
-    	String toMatch = in.next();
-    	boolean last = false;
-    	while (in.hasNext() || !last) {
-    		System.out.println("Looking for " + toMatch);
+    	String previousWord = in.next().toLowerCase();
+    	String currentWord = "";
+    	
+    	while (in.hasNext()) {
+    		result.append(previousWord + " ");
+    		currentWord = in.next().toLowerCase();
+
     		String toAdd = "";
     		int maxWeight = 0;
-    		if (graph.vertices().contains(currentWord)) {
-	    		Map<String, Integer> firstLayer = graph.targets(currentWord);
-	    		for (String s : firstLayer.keySet()) {
-	    			System.out.println("Current first layer " + s);
-	    			int weightS = firstLayer.get(s);
-	    			Map<String, Integer> secondLayer = graph.targets(s);
-	    			
-	    			for (String bridge : secondLayer.keySet()) {
-	    				System.out.println("Current second layer " + bridge);
-	    				if (!toMatch.equals(bridge)) {
-	    					System.out.println("We skipped it");
-	    					continue;
+    		
+    		if (graph.vertices().contains(previousWord)) {
+    			Map<String, Integer> firstLayer = graph.targets(previousWord);
+    			
+    			for (String bridge : firstLayer.keySet()) {
+    				int weightFirst = firstLayer.get(bridge);
+    				Map<String, Integer> secondLayer = graph.targets(bridge);
+    				
+    				for (String current : secondLayer.keySet()) {
+    					if (!current.equals(currentWord)) {continue;}
+    					
+    					int pathWeight = weightFirst + secondLayer.get(current);
+    					
+    					if (pathWeight < maxWeight) {
+    						continue;
+    					}
+    					else if (pathWeight > maxWeight) {
+    						maxWeight = pathWeight;
+    						toAdd = bridge;
+    						continue;
+    					}
+    					else if (current.compareTo(toAdd) < 0) {
+	    					toAdd = bridge;
 	    				}
-	    				int weightBridge = secondLayer.get(bridge) + weightS;
-	
-	    				if (weightBridge < maxWeight) {
-	    					continue;
-	    				}
-	    				else if (weightBridge > maxWeight) {
-	    					maxWeight = weightBridge;
-	    					toAdd = s;
-	    				}
-	    				else if (bridge.compareTo(toAdd) < 0) {
-	    					toAdd = s;
-	    				}
-	    				
-	    			}
-	    		}
-	    	
-	    	
+    					
+    				}
+    			}
+    			
+    			// add the bridge word to the result only if it was found
+    			if (maxWeight != 0) {
+    				result.append(toAdd + " ");
+    			}
     		}
-    		result.append(currentWord + " ");
-    		if (toAdd != "") {
-    			result.append(toAdd + " ");
-    		}
-    		if (!in.hasNext()) {
-    			last = true;	
-    		}
-    		else {
-    			last = false;
-    			currentWord = toMatch;
-    			toMatch = in.next();
-    		}
+    		
+    		previousWord = currentWord;
     	}
     	
     	in.close();
-    	result.append(toMatch).toString();
-    	System.out.println(result);
+    	// this adds the last word of the input
+    	result.append(previousWord);
     	return result.toString();
+    	
     }
     
     public Map<String, Integer> getSecondLayer(String s){
