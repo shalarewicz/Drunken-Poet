@@ -36,7 +36,6 @@ public class ConcreteEdgesGraph<L extends Comparable<L>> implements Graph<L> {
     // 	 Sources - returns a copy of each vertex as the key, weight
     // 	 Targets - returns a copy of each target as the key, weight
     
-    
     public ConcreteEdgesGraph() {	
     }
     
@@ -148,6 +147,7 @@ public class ConcreteEdgesGraph<L extends Comparable<L>> implements Graph<L> {
      * entire graph is enclosed by braces "{}" Targets and sources are sorted lexicographically. 
      * @return - A string representation of this graph
      */
+    // TODO: Fix toString();
     @Override public String toString() {
     	// {source=[target: weight, target: weight.....], source=[target: weight, target: weight.....],...}
     	

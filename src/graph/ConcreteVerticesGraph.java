@@ -4,7 +4,6 @@
 package graph;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -83,6 +82,8 @@ public class ConcreteVerticesGraph<L> implements Graph<L> {
     	throw new RuntimeException("Should never get here. Vertex not in graph");
     }
     @Override public int set(L source, L target, int weight) {
+    	this.add(source);
+    	this.add(target);
     	Vertex<L> sourceV = findVertex(source);
     	Vertex<L> targetV = findVertex(target);
     	int oldWeight = sourceV.getWeight(targetV);
@@ -147,14 +148,17 @@ public class ConcreteVerticesGraph<L> implements Graph<L> {
     	ans.append("{");
     	
     	int i = 0;
+    	System.out.println("In toString vertices are " + vertices);
+    	System.out.println(vertices.size());
     	for (Vertex<L> vertex : vertices) {
+    		System.out.println("Adding " + vertex);
     		ans.append(vertex);
     		if (i < vertices.size() - 1) {
     			ans.append(", ");
     		}
+    		i++;
     	}
         	
-    	System.out.println(ans);
     	return ans.toString() + "}";
     }
     		
@@ -331,7 +335,6 @@ class Vertex<L> {
     		}
     		j++;
 		}
-    	System.out.println(result);
     	return result.toString() + "]";
     }
     

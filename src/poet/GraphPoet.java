@@ -5,6 +5,10 @@ package poet;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Scanner;
+import java.util.Set;
 
 import graph.Graph;
 
@@ -56,9 +60,12 @@ public class GraphPoet {
     private final Graph<String> graph = Graph.empty();
     
     // Abstraction function:
-    //   TODO
+    //   Graph poet represents an adjacency graph where each edge represents that word1 is followed by word2
+    // 		the weight of that edge times. 
     // Representation invariant:
-    //   TODO
+    //   Each edge occurs weight times in the input. 
+    // 		i.e. Total weight = number words - 1;
+	//   Each word is in corpus
     // Safety from rep exposure:
     //   TODO
     
@@ -69,7 +76,47 @@ public class GraphPoet {
      * @throws IOException if the corpus file cannot be found or read
      */
     public GraphPoet(File corpus) throws IOException {
-        throw new RuntimeException("not implemented");
+    	/*Periods should stop edges from being formed. are they allowed in the input?
+    	 * unless they are a part of the word. 
+    	 * Shakespeare.text separates "," and "." but we can just add them to the end of the previous word
+    	 * since we have to grab the next word anyway
+    	 */
+    	
+    	// IF a comma or period is found by itself it will be appended to the end of the previous word. 
+    	final String COMMA = ",";
+    	final String PERIOD = ".";
+    	
+    	Scanner input = new Scanner(corpus);
+    	// Breaks if length < 2;
+    	// Grab the next two words
+    	String previousWord = input.next().toLowerCase();
+    	String currentWord = input.next().toLowerCase();
+    	boolean last = false;
+    	while (input.hasNext() || !last) {
+    			// Account for periods or commas
+    			if (currentWord.equals(COMMA) || currentWord.equals(PERIOD)) {
+    				previousWord = previousWord + currentWord;
+    				currentWord = input.next().toLowerCase();
+    			}
+    			
+    			// Add the edge to the graph
+    			int oldWeight = graph.set(previousWord, currentWord, 1);
+    			
+    			if (oldWeight != 0) {
+    				graph.set(previousWord, currentWord, oldWeight + 1);
+    			}
+    			if (!input.hasNext()) {
+    				last = true;
+    			}
+    			else {
+    				last = false;
+    				previousWord = currentWord;
+    				currentWord = input.next().toLowerCase();
+    			}
+    		
+    	}
+    	
+    	input.close();
     }
     
     // TODO checkRep
@@ -81,9 +128,79 @@ public class GraphPoet {
      * @return poem (as described above)
      */
     public String poem(String input) {
-        throw new RuntimeException("not implemented");
+    	// When adding a bridge word, check to see if prior word has period then capitalize.
+    	// New line ever 10 words?
+    	
+    	Scanner in = new Scanner(input);
+    	StringBuilder result = new StringBuilder();
+    	
+    	String currentWord = in.next().toLowerCase();
+    	// TODO: Will break with string length < 2
+    	String toMatch = in.next();
+    	boolean last = false;
+    	while (in.hasNext() || !last) {
+    		System.out.println("Looking for " + toMatch);
+    		String toAdd = "";
+    		int maxWeight = 0;
+    		if (graph.vertices().contains(currentWord)) {
+	    		Map<String, Integer> firstLayer = graph.targets(currentWord);
+	    		for (String s : firstLayer.keySet()) {
+	    			System.out.println("Current first layer " + s);
+	    			int weightS = firstLayer.get(s);
+	    			Map<String, Integer> secondLayer = graph.targets(s);
+	    			
+	    			for (String bridge : secondLayer.keySet()) {
+	    				System.out.println("Current second layer " + bridge);
+	    				if (!toMatch.equals(bridge)) {
+	    					System.out.println("We skipped it");
+	    					continue;
+	    				}
+	    				int weightBridge = secondLayer.get(bridge) + weightS;
+	
+	    				if (weightBridge < maxWeight) {
+	    					continue;
+	    				}
+	    				else if (weightBridge > maxWeight) {
+	    					maxWeight = weightBridge;
+	    					toAdd = s;
+	    				}
+	    				else if (bridge.compareTo(toAdd) < 0) {
+	    					toAdd = s;
+	    				}
+	    				
+	    			}
+	    		}
+	    	
+	    	
+    		}
+    		result.append(currentWord + " ");
+    		if (toAdd != "") {
+    			result.append(toAdd + " ");
+    		}
+    		if (!in.hasNext()) {
+    			last = true;	
+    		}
+    		else {
+    			last = false;
+    			currentWord = toMatch;
+    			toMatch = in.next();
+    		}
+    	}
+    	
+    	in.close();
+    	result.append(toMatch).toString();
+    	System.out.println(result);
+    	return result.toString();
     }
     
+    public Map<String, Integer> getSecondLayer(String s){
+    	throw new RuntimeException("Not implemented");
+    }
+    
+    public Map<String, Integer> getFirstLayer(String s){
+    	return this.graph.targets(s);
+    }
     // TODO toString()
+    // try to have it re-create the source text. basically a depth first search in reverse. start with nodes with the highest weight
     
 }
