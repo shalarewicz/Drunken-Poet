@@ -108,7 +108,7 @@ public class GraphPoetTest {
     							TEST.contains(previousWord + " " + currentWord));
     				}
     				else {
-    					assertTrue("expected input to contain phrase \"" + previousWord + " " + currentWord + "\"", TEST.contains(previousWord + " " + currentWord ));
+    					assertTrue("expected input to contain phrase \"" + previousWord + " " + currentWord + "\"", TEST.toLowerCase().contains(previousWord + " " + currentWord ));
     				}
     				
     			} catch (Exception e) {
@@ -264,7 +264,6 @@ public class GraphPoetTest {
     	    		int number = Integer.parseInt(match.substring(2)); 
     	    		weights.add(number);
     			}
-    			System.out.println(targetList);
     			for (int i = 1; i < weights.size(); i++) {
     				System.out.println(weights.get(i - 1));
     				System.out.println(weights.get(i));

@@ -170,6 +170,9 @@ public abstract class GraphInstanceTest {
     	assertEquals("expected map to have size ", expected.size(), test.targets(VERTEX2).size());
     }
     
+    
+    //TODO: Test that set adds nodes to graph
+    
     @Test
     // Test set when weight is updated
     public void testSetUpdateWeight() {

@@ -11,14 +11,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.HashMap;
-import java.util.Arrays;
 
 /**
  * An implementation of Graph.
  * 
  * <p>PS2 instructions: you MUST use the provided rep.
  */
-public class ConcreteEdgesGraph<L extends Comparable<L>> implements Graph<L> {
+public class ConcreteEdgesGraph<L> implements Graph<L> {
     
     private final Set<L> vertices = new HashSet<>();
     private final List<Edge<L>> edges = new ArrayList<>();
@@ -64,7 +63,12 @@ public class ConcreteEdgesGraph<L extends Comparable<L>> implements Graph<L> {
     }
     
     @Override public int set(L source, L target, int weight) {
-    	if (!vertices.contains(source) || !vertices.contains(target)) {throw new RuntimeException("Source or Target not contained in graph");}
+    	if (!vertices.contains(source)) {
+    		vertices.add(source);
+    	}
+    	if (!vertices.contains(target)) {
+    		vertices.add(target);
+    	}
     	int result = 0;
     	List<Edge<L>> toRemove = new ArrayList<Edge<L>>();
     	for (Edge<L> edge : edges) {
@@ -124,20 +128,6 @@ public class ConcreteEdgesGraph<L extends Comparable<L>> implements Graph<L> {
     	return result;
     	}
     
-    /**
-     * Returns the weight of the edge between source and target. 
-     * @param source - Source of the edge to be found
-     * @param target - Target of the edge to be found
-     * @return - weight of the edge from source to target. Returns 0 if not found. 
-     */
-    private int getWeight(L source, L target) {
-    	for (Edge<L> edge : edges) {
-    		if (source == edge.source() && target == edge.target()) {
-    			return edge.weight();
-    		}
-    	}
-    	return 0;
-    }
     
     /**
      * Returns a string representation of this graph. The string representation consists of a list of binding where each vertex
@@ -147,7 +137,6 @@ public class ConcreteEdgesGraph<L extends Comparable<L>> implements Graph<L> {
      * entire graph is enclosed by braces "{}" Targets and sources are sorted lexicographically. 
      * @return - A string representation of this graph
      */
-    // TODO: Fix toString();
     @Override public String toString() {
     	// {source=[target: weight, target: weight.....], source=[target: weight, target: weight.....],...}
     	
@@ -177,7 +166,6 @@ public class ConcreteEdgesGraph<L extends Comparable<L>> implements Graph<L> {
 			}
     		i++;
     	}
-    	System.out.println(ans);
     	return ans.toString() + "}";
     	
     }
@@ -194,7 +182,7 @@ public class ConcreteEdgesGraph<L extends Comparable<L>> implements Graph<L> {
  * <p>PS2 instructions: the specification and implementation of this class is
  * up to you.
  */
-class Edge<L extends Comparable<L>> implements Comparable<Edge<L>>{
+class Edge<L>{
     
 	private L source, target;
 	private int weight;
@@ -254,17 +242,4 @@ class Edge<L extends Comparable<L>> implements Comparable<Edge<L>>{
     public String toString() {
     	return "(" + source + "-->" + target + ": " + weight + ")";
     }
-    
-    @Override
-    public int compareTo(Edge<L> that) {
-    	if (source.compareTo(that.source()) == 0) {
-    		if (target.compareTo(that.target()) == 0) {
-    			return this.weight - that.weight;
-    		}
-    		else {return (this.target().compareTo(that.target()));}
-    	} else {return this.source.compareTo(that.source());}
-    }
-    
-    
-    
 }

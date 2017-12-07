@@ -20,8 +20,12 @@ public class Main {
      * @throws IOException if a poet corpus file cannot be found or read
      */
     public static void main(String[] args) throws IOException {
-        final GraphPoet nimoy = new GraphPoet(new File("src/poet/mugar-omni-theater.txt"));
-        final String input = "Test the system.";
+        final GraphPoet nimoy = new GraphPoet(new File("src/poet/gameOfThrones.txt"));
+        final String input = " I see in your eyes the same fear that would take the heart of me. "
+        		+ "The day may come when the courage of Men fails; when we forsake our friends "
+        		+ "and break all bonds of fellowship; but it is not this day - an hour of wolves "
+        		+ "and shattered shields, when the Age of Man comes crashing down - but it is not this day!!! "
+        		+ "This day we fight! By all that you hold dear on this good earth - I bid you stand! Men of the West";
         System.out.println(input + "\n>>>\n" + nimoy.poem(input));
     }
     

@@ -27,6 +27,7 @@ public interface Graph<L> {
      */
     public static <L> Graph<L> empty() {
         return new ConcreteVerticesGraph<L>();
+    	// return new ConcreteEdgesGraph<L>();
     }
     
     /**

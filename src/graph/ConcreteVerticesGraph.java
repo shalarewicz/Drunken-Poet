@@ -173,7 +173,6 @@ public class ConcreteVerticesGraph<L> implements Graph<L> {
  */
 class Vertex<L> {
     
-	// TODO: In Iter2 rep and all methodds to not use Vertex<L> but just L. 
 	private Map<Vertex<L>, Integer> sources = new HashMap<Vertex<L>, Integer>();
     private Map<Vertex<L>, Integer> targets = new HashMap<Vertex<L>, Integer>();
     private L name;
@@ -314,14 +313,6 @@ class Vertex<L> {
 
     }
     
-    private Vertex<L> findVertex(L s) {
-    	for (Vertex<L> v : targets.keySet()) {
-    		if (v.getName().equals(s)) {
-    			return v;
-    		}
-    	}
-    	return null; //This is less than ideal
-    }
     @Override
     public String toString() {
     	// Source=[target: weight, target, weight]

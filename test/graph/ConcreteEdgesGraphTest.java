@@ -39,7 +39,7 @@ public class ConcreteEdgesGraphTest extends GraphInstanceTest {
     private final int WEIGHT1 = 1;
     private final int WEIGHT3 = 3;
     private final int WEIGHT5 = 5;
-    
+
     @Test
     public void testToStringEmptyGraph() {
     	ConcreteEdgesGraph<String> test = new ConcreteEdgesGraph<String>();

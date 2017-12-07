@@ -121,7 +121,6 @@ public class GraphPoet {
     	checkRep();
     }
         
-    // TODO checkRep
     private void checkRep() {
     	assert DEBUG;
     }
@@ -203,8 +202,10 @@ public class GraphPoet {
     	// Capitalize the first word
     	String first = ("" + result.charAt(0)).toUpperCase();
     	result.setCharAt(0, first.charAt(0));
+    	String ans = result.toString();
+    	ans.replaceAll(" i ", "I");
     	
-    	return result.toString();
+    	return ans;
     	
     }
     
