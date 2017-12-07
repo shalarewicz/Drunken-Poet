@@ -4,11 +4,13 @@
 package graph;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.HashMap;
+import java.util.Comparator;
 
 /**
  * An implementation of Graph.
@@ -25,7 +27,10 @@ public class ConcreteVerticesGraph<L> implements Graph<L> {
     //   No edge has weight <= 0
     //   Every node has a name which is a string of postive length
     // Safety from rep exposure:
-    //   TODO
+    //   set returns immutable int;
+    ///  add and remove return no references;
+    // 	 vertices, targets and sources return new objects
+    
     
     
     /**
@@ -49,7 +54,6 @@ public class ConcreteVerticesGraph<L> implements Graph<L> {
     	}
     }
     
-    // TODO checkRep
     private void checkRep() {
     	for (Vertex<L> vertex : vertices) {
     		assert vertex.getName() != null;
@@ -139,7 +143,6 @@ public class ConcreteVerticesGraph<L> implements Graph<L> {
     	return result;
     }
     
-    // TODO toString()
     @Override
     public String toString() {
     	// {source=[target: weight, target: weight.....], source=[target: weight, target: weight.....],...}
@@ -148,10 +151,7 @@ public class ConcreteVerticesGraph<L> implements Graph<L> {
     	ans.append("{");
     	
     	int i = 0;
-    	System.out.println("In toString vertices are " + vertices);
-    	System.out.println(vertices.size());
     	for (Vertex<L> vertex : vertices) {
-    		System.out.println("Adding " + vertex);
     		ans.append(vertex);
     		if (i < vertices.size() - 1) {
     			ans.append(", ");
@@ -173,6 +173,7 @@ public class ConcreteVerticesGraph<L> implements Graph<L> {
  */
 class Vertex<L> {
     
+	// TODO: In Iter2 rep and all methodds to not use Vertex<L> but just L. 
 	private Map<Vertex<L>, Integer> sources = new HashMap<Vertex<L>, Integer>();
     private Map<Vertex<L>, Integer> targets = new HashMap<Vertex<L>, Integer>();
     private L name;
@@ -184,7 +185,7 @@ class Vertex<L> {
     //   Weight not equal to zero
     // 	 Name not null
     // Safety from rep exposure:
-    //   TODO
+    //   No references to the rep are returned. Type is mutable therefore references to rep are ok
     
     
     /**
@@ -326,9 +327,18 @@ class Vertex<L> {
     	// Source=[target: weight, target, weight]
     	StringBuilder result = new StringBuilder();
     	result.append(this.name + "=[");
-    	
+    	List<Vertex<L>> keys = new ArrayList<Vertex<L>>(targets.keySet());
+    	Collections.sort(keys, new Comparator<Vertex<L>>() {
+	    	@Override
+	    	/* compare is flipped in order to sort list in descending rather than 
+	    	 * ascending order
+	    	 */
+	    	public int compare(Vertex<L> v1, Vertex<L> v2) {
+	    		return targets.get(v2).compareTo(targets.get(v1));
+	    	}
+    	});
     	int j = 0;
-    	for (Vertex<L> target : targets.keySet()) {
+    	for (Vertex<L> target : keys) {
     		result.append(target.getName() + ": " + targets.get(target));
     		if (j < targets.size() - 1) {
     			result.append(", ");
@@ -339,7 +349,6 @@ class Vertex<L> {
     }
     
     
-    // TODO toString()
  
     
 }

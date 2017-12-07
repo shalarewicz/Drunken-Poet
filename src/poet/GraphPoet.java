@@ -6,9 +6,11 @@ package poet;
 import java.io.File;
 import java.io.*;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Scanner;
-import java.util.Set;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 import graph.Graph;
 
@@ -58,6 +60,7 @@ import graph.Graph;
 public class GraphPoet {
     
     private final Graph<String> graph = Graph.empty();
+    private final boolean DEBUG = true;
     
     // Abstraction function:
     //   Graph poet represents an adjacency graph where each edge represents that word1 is followed by word2
@@ -67,7 +70,9 @@ public class GraphPoet {
     // 		i.e. Total weight = number words - 1;
 	//   Each word is in corpus
     // Safety from rep exposure:
-    //   TODO
+    //   GraphPoet constructor doesn't expose the rep as it only takes a file as an input
+    //   and is immutable. 
+    // 	poem() returns a reference to ann immutable object
     
     /**
      * Create a new poet with the graph from corpus (as described above).
@@ -82,10 +87,6 @@ public class GraphPoet {
     	 * since we have to grab the next word anyway
     	 */
     	
-    	// IF a comma or period is found by itself it will be appended to the end of the previous word. 
-    	final String COMMA = ",";
-    	final String PERIOD = ".";
-    	
     	Scanner input = new Scanner(new BufferedReader(new FileReader(corpus)));
     	
     	if (!input.hasNext()) { 
@@ -93,18 +94,20 @@ public class GraphPoet {
     		return;
     	}
     	
-    	String previousWord = input.next().toLowerCase();
+    	// Remove leading and trailing special characters
+    	String previousWord = input.next().toLowerCase().replaceAll("[^a-zA-Z]+", "");
     	this.graph.add(previousWord);
     	
     	String currentWord = "";
     	
+    	int numWords = 0;
     	while (input.hasNext()) {
-    		currentWord = input.next().toLowerCase();
-    		// Account for periods or commas
-			if (currentWord.equals(COMMA) || currentWord.equals(PERIOD)) {
-				previousWord = previousWord + currentWord;
-				continue;
-			}
+    		numWords++;
+    		if (numWords % 10000 == 0) System.out.println(numWords + " words");
+    		
+    		// Remove leading and trailing special characters
+    		currentWord = input.next().toLowerCase().replaceAll("[^a-zA-Z]+", "");
+    		if (currentWord.equals("")) continue;
 			
 			int oldWeight = graph.set(previousWord, currentWord, 1);
 			if (oldWeight != 0) {
@@ -114,11 +117,14 @@ public class GraphPoet {
 			previousWord = currentWord;
     		
     	}
-    	 	
     	input.close();
+    	checkRep();
     }
-    
+        
     // TODO checkRep
+    private void checkRep() {
+    	assert DEBUG;
+    }
     
     /**
      * Generate a poem.
@@ -142,6 +148,7 @@ public class GraphPoet {
     	while (in.hasNext()) {
     		result.append(previousWord + " ");
     		currentWord = in.next().toLowerCase();
+    		
 
     		String toAdd = "";
     		int maxWeight = 0;
@@ -179,24 +186,71 @@ public class GraphPoet {
     			}
     		}
     		
-    		previousWord = currentWord;
+    		//Capitalize words following a period
+    		if (previousWord.charAt(previousWord.length() - 1) == '.') {
+    			previousWord = currentWord.substring(0, 1).toUpperCase() + currentWord.substring(1);
+    		}
+    		else {
+    			previousWord = currentWord;
+    		}
     	}
     	
     	in.close();
+    	
     	// this adds the last word of the input
     	result.append(previousWord);
+    	
+    	// Capitalize the first word
+    	String first = ("" + result.charAt(0)).toUpperCase();
+    	result.setCharAt(0, first.charAt(0));
+    	
     	return result.toString();
     	
     }
     
-    public Map<String, Integer> getSecondLayer(String s){
-    	throw new RuntimeException("Not implemented");
-    }
-    
-    public Map<String, Integer> getFirstLayer(String s){
+    public Map<String, Integer> getLayer(String s){
     	return this.graph.targets(s);
     }
-    // TODO toString()
-    // try to have it re-create the source text. basically a depth first search in reverse. start with nodes with the highest weight
     
+    // try to have it re-create the source text. basically a depth first search in reverse. start with nodes with the highest weight
+    @Override
+    public String toString() {
+    	// {source=[target: weight, target: weight.....], source=[target: weight, target: weight.....],...}
+    	
+    	StringBuilder ans = new StringBuilder();
+    	ans.append("{");
+    	
+    	List<String> sortedVertices = new ArrayList<String>(this.graph.vertices());
+    	Collections.sort(sortedVertices);
+    	
+    	int i = 0;
+    	for (String vertex : sortedVertices) {
+    		ans.append(vertex + "=[");
+    		Map<String, Integer> targets = this.graph.targets(vertex);
+    		List<String> sortedTargets = new ArrayList<String>(targets.keySet());
+    		Collections.sort(sortedTargets, new Comparator<String>() {
+	    		@Override
+	    		public int compare(String v2, String v1) {
+	    			return targets.get(v1).compareTo(targets.get(v2));
+	    		}
+    		});
+    		int j = 0;
+    		for (String target : sortedTargets) {
+    			ans.append(target + ": " + targets.get(target));
+    			if (j < sortedTargets.size() - 1) {
+    				ans.append(", ");
+    			}
+    			j++;
+    		}
+    		ans.append("]");
+    		
+    		
+    		if (i < sortedVertices.size() - 1) {
+    			ans.append(", ");
+    		}
+    		i++;
+    	}
+        	
+    	return ans.toString() + "}";
+    }
 }

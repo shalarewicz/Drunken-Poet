@@ -9,6 +9,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+import java.util.List;
+import java.util.ArrayList;
 
 import org.junit.Test;
 
@@ -34,10 +38,35 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
      */
     
     // Testing strategy for ConcreteVerticesGraph<String>.toString()
-    //   TODO
+    //  Don't need to test vertex since that has it's owen tests. Can assume it's right
+    //  Empty Graph, Size one, Sinze n
+    /// Use RegEx
     
-    // TODO tests for ConcreteVerticesGraph<String>.toString()
+    @Test
+    //Tests empty graph
+    public void testGraphToStringEmpty() {
+    	assertEquals("expected \"{}\" ", "{}", emptyInstance().toString());
+    }
     
+    @Test
+    // Tests graph with one vertex
+    public void testGraphOne() {
+    	Graph<String> test = emptyInstance();
+    	test.add("Test1");
+    	assertEquals("expected \"{Test1=[]}\" ", "{Test1=[]}", test.toString());
+    }
+    
+    @Test
+    // Tests graph with n vertices and n edges using regual expression
+    public void testGraphMany() {
+    	Graph<String> test = emptyInstance();
+    	test.set("Test1", "Test2", 100);
+    	test.set("Test1", "Test3", 2);
+    	test.set("Test2", "Test4", 5);
+    	test.set("Test3", "Test2", 76);
+    	test.set("Test1", "Test4", 100);
+    	assertTrue("expected 5", test.toString().matches("\\{(.*=\\[.*[\\], |\\]])*\\}"));
+    }
     /*
      * Testing Vertex<String>...
      */
@@ -61,10 +90,11 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     private final Vertex<String> V3 = new Vertex<String>("Test3");
     private final Vertex<String> V4 = new Vertex<String>("Test4");
     private final int WEIGHT5 = 5;
+    private final int WEIGHT75 = 75;
     private final int WEIGHT4 = 4;
     private final int WEIGHT0 = 0;
+    private final int WEIGHT1 = 1;
     
-    // TODO tests for operations of Vertex<String>
     @Test
     // test setName
     public void testSetName() {
@@ -109,28 +139,53 @@ public class ConcreteVerticesGraphTest extends GraphInstanceTest {
     }
     
     @Test
-    // tests toString when no targets
+    // Tests Vertex.toString when the vertex has zero targets
     public void testToStringNoTargers() {
-    	String expected = "Test1=[]";
-    	assertEquals("expected string ", expected, V1.toString());
+    	assertTrue("expected string ", V1.toString().matches(".+=\\[(.+: [0-9]+[\\], .+: [0-9]+]*)*\\]"));
     }
     
     @Test
     // tests toString when 1 target
     public void testToStringOneTarget() {
     	V1.setTarget(V4, WEIGHT5);
-    	String expected = "Test1=[Test4: 5]";
-    	assertEquals("expected string ", expected, V1.toString());
+    	System.out.println(V1.toString());
+    	assertTrue("expected string ", V1.toString().matches(".+=\\[(.+: [0-9]+[\\], .+: [0-9]+]*)*\\]"));
     }
     
     @Test
-    // tests toString when n targets
-    // TODO: Correct Test to check for contents and not match  against a specific String
-    public void testToStringManyTargets() {
+    // Tests Vertex.toString  using regex
+    public void testVertexToStringManyTargets() {
     	V1.setTarget(V4, WEIGHT5);
     	V1.setTarget(V3, WEIGHT4);
-    	String expected = "Test1=[Test4: 5, Test3: 4]";
-    	assertEquals("expected string ", expected, V1.toString());
+    	V1.setTarget(V2, WEIGHT5);
+    	V1.setTarget(V1, WEIGHT4);
+    	System.out.println(V1.toString());
+    	assertTrue("expected V1 to be of pattern Source=[target: weight, target, weight]", V1.toString().matches(
+    			".+=\\[(.+: [0-9]+[\\], .+: [0-9]+]*)*\\]"));
+    }
+    
+    @Test
+    public void testVertexToStringDescendingWeight() {
+    	V1.setTarget(V4, WEIGHT75);
+    	V1.setTarget(V3, WEIGHT4);
+    	V1.setTarget(V2, WEIGHT5);
+    	V1.setTarget(V1, WEIGHT1);
+    	
+    	String test = V1.toString();
+    	Pattern pattern = Pattern.compile(": [0-9]+");
+    	Matcher matcher = pattern.matcher(test);
+    	
+    	List<Integer> weights = new ArrayList<Integer>();
+    	
+    	while (matcher.find()) {
+    		String match = matcher.group();
+    		int number = Integer.parseInt(match.substring(2)); 
+    		weights.add(number);
+    	}
+    	
+    	for (int i=1; i < weights.size(); i++) {
+    		assertTrue("expected weight to be >= previous weight ", weights.get(i - 1) >= weights.get(i));
+    	}
     }
     
 }
